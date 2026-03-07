@@ -336,6 +336,8 @@ type
     function Tokenize(const aRedisCommand: string): TArray<string>;
     procedure Connect;
     procedure Disconnect;
+    function IsConnected: Boolean; overload;
+    function IsConnected(const aVerifyConnection: Boolean): Boolean; overload;
     function InTransaction: boolean;
 
     // client

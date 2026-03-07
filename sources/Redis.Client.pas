@@ -44,6 +44,7 @@ type
     FIsValidResponse: boolean;
     FInTransaction: boolean;
     FIsTimeout: boolean;
+    FIsConnected: boolean;
     FFormatSettings: TFormatSettings;
     function Redis_BytesToString(aValue: TRedisBytes): TRedisString;
     function ParseSimpleStringResponse(var AValidResponse: boolean): string;
@@ -276,6 +277,8 @@ type
     function ExecuteWithIntegerResult(const RedisCommand: IRedisCommand): Int64; overload;
     function ExecuteWithStringResult(const RedisCommand: IRedisCommand): TRedisString;
     procedure Disconnect;
+    function IsConnected: Boolean; overload;
+    function IsConnected(const aVerifyConnection: Boolean): Boolean; overload;
     procedure SetCommandTimeout(const Timeout: Int32);
     // client
     procedure ClientSetName(const ClientName: string);
@@ -462,6 +465,7 @@ end;
 procedure TRedisClient.Connect;
 begin
   FTCPLibInstance.Connect(FHostName, FPort);
+  FIsConnected := True;
 end;
 
 constructor TRedisClient.Create(const HostName: string; const Port: Word; const Lib: string);
@@ -513,9 +517,28 @@ end;
 procedure TRedisClient.Disconnect;
 begin
   try
+    FIsConnected := False;
     FTCPLibInstance.Disconnect;
   except
   end;
+end;
+
+function TRedisClient.IsConnected: Boolean;
+begin
+  Result := FIsConnected;
+end;
+
+function TRedisClient.IsConnected(const aVerifyConnection: Boolean): Boolean;
+begin
+  if aVerifyConnection and FIsConnected then
+  begin
+    try
+      PING;
+    except
+      FIsConnected := False;
+    end;
+  end;
+  Result := FIsConnected;
 end;
 
 function TRedisClient.ExecuteWithIntegerResult(const RedisCommand: IRedisCommand): Int64;
