@@ -135,6 +135,8 @@ type
     procedure TestGEORADIUS_WithDist;
     procedure TestGEORADIUS_Sorting;
     procedure TestGEORADIUS_Count;
+    procedure TestIsConnected;
+    procedure TestIsConnectedAfterDisconnect;
   end;
 
 implementation
@@ -1685,6 +1687,21 @@ begin
   FRedis.DEL(['set1', 'set2']);
   lRes := FRedis.SUNIONSTORE('dest', ['set1', 'set2']);
   CheckEquals(0, lRes);
+end;
+
+procedure TestRedisClient.TestIsConnected;
+begin
+  CheckTrue(FRedis.IsConnected, 'IsConnected should be True after Connect');
+  CheckTrue(FRedis.IsConnected(False), 'IsConnected(False) should be True after Connect');
+  CheckTrue(FRedis.IsConnected(True), 'IsConnected(True) with PING should be True for active connection');
+end;
+
+procedure TestRedisClient.TestIsConnectedAfterDisconnect;
+begin
+  CheckTrue(FRedis.IsConnected, 'IsConnected should be True before Disconnect');
+  FRedis.Disconnect;
+  CheckFalse(FRedis.IsConnected, 'IsConnected should be False after Disconnect');
+  CheckFalse(FRedis.IsConnected(True), 'IsConnected(True) should be False after Disconnect');
 end;
 
 initialization
